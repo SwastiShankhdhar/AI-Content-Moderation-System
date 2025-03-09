@@ -9,6 +9,25 @@ import UserInput from "./pages/UserInput";
 import Logout from "./pages/Logout";
 import "./App.css";
 
+import "@google/model-viewer";
+
+function ModelComponent() {
+  return (
+    <model-viewer
+      src="C:\Users\DELL\Downloads\the_universe.glb"
+      ios-src="C:\Users\DELL\Downloads\The_Universe.usdz"
+      alt="3D Model of the Universe"
+      ar
+      auto-rotate
+      camera-controls
+      style={{ width: "100%", height: "500px" }}
+    />
+  );
+}
+
+export default ModelComponent;
+
+
 function App() {
   useEffect(() => {
     const modelContainer = document.getElementById("model-container");
