@@ -77,6 +77,7 @@ from flask import Flask, request, jsonify
 from transformers import pipeline
 from flask_cors import CORS
 from database.db_connnection import connect_db  
+from bson import ObjectId
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
@@ -87,6 +88,10 @@ db = connect_db()
 # Load Hugging Face AI Model
 model = pipeline("text-classification", model="KoalaAI/Text-Moderation")
 
+
+# ===================================
+# ✅ Route 1: Moderate Content
+# ===================================
 @app.route('/moderate', methods=['POST'])
 def moderate_content():
     """
@@ -117,14 +122,19 @@ def moderate_content():
         "score": score
     })
 
+
+# ===================================
+# ✅ Route 2: Get All Reports
+# ===================================
 @app.route('/reports', methods=['GET'])
 def get_reports():
     """
     This route retrieves all flagged content from MongoDB.
     """
-    reports = list(db.reports.find({}, {'_id': 1, 'text': 1, 'label': 1, 'score': 1, 'status': 1}))
-    formatted_reports = []
+    reports = list(db.reports.find())
 
+    # Convert MongoDB ObjectId to string
+    formatted_reports = []
     for report in reports:
         formatted_reports.append({
             "id": str(report['_id']),
@@ -136,6 +146,10 @@ def get_reports():
 
     return jsonify(formatted_reports)
 
+
+# ===================================
+# ✅ Route 3: Update Report Status (Approve/Reject)
+# ===================================
 @app.route('/reports/<string:report_id>', methods=['POST'])
 def update_report_status(report_id):
     """
@@ -143,18 +157,31 @@ def update_report_status(report_id):
     """
     action = request.json.get('action')
 
+    # Validate the action
     if action not in ['approve', 'reject']:
         return jsonify({"error": "Invalid action"}), 400
 
-    status = "Approved" if action == 'approve' else "Rejected"
+    # Convert report_id to ObjectId
+    try:
+        object_id = ObjectId(report_id)
+    except:
+        return jsonify({"error": "Invalid report ID"}), 400
 
-    db.reports.update_one(
-        {"_id": report_id},
+    # Update status in MongoDB
+    status = "Approved" if action == 'approve' else "Rejected"
+    result = db.reports.update_one(
+        {"_id": object_id},
         {"$set": {"status": status}}
     )
 
+    # If no document was found
+    if result.matched_count == 0:
+        return jsonify({"error": "Report not found"}), 404
+
     return jsonify({"message": f"Content has been {status.lower()} successfully!"})
+
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000, debug=True)
+
 
