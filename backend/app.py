@@ -1,6 +1,6 @@
 # from flask import Flask, request, jsonify
 # from transformers import pipeline
-# from database.db_connection import connect_db  # 💯 This is the PERFECT way
+# from database.db_connnection import connect_db  
 
 # app = Flask(__name__)
 # db = connect_db()
@@ -33,11 +33,12 @@
 #     })
 
 # if __name__ == '__main__':
-#     app.run(debug=True)
+#     from werkzeug.serving import run_simple
+#     run_simple('localhost', 5000, app, use_reloader=False)
 
 from flask import Flask, request, jsonify
 from transformers import pipeline
-from database import connect_db  # 💯 Now it will work perfectly
+from database.db_connnection import connect_db  
 
 app = Flask(__name__)
 db = connect_db()
@@ -70,4 +71,4 @@ def moderate_content():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='localhost', port=5000, debug=True)
