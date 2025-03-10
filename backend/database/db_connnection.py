@@ -1,16 +1,6 @@
-const mongoose = require('mongoose');
+from pymongo import MongoClient
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect('mongodb://mongo:27017/moderationDB', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
-};
-
-module.exports = connectDB;
+def connect_db():
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['content_moderation_db']
+    return db
